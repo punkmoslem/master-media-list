@@ -321,9 +321,10 @@
     padding:14px 16px;
   }
   .stat .label{ font-size:0.72rem; color:var(--muted-solid); text-transform:uppercase; letter-spacing:.04em;}
-  .stat .value{ font-size:1.15rem; font-weight:700; color:var(--navy); margin-top:4px; word-break:break-word;}
+  .stat .value{ font-size:1.15rem; font-weight:700; color:var(--teal-dark); margin-top:4px; word-break:break-word;}
   .stat .value a{ color:var(--teal-dark); text-decoration:none; }
   .stat .value a:hover{ text-decoration:underline; }
+  .stat .updated{ font-size:0.72rem; color:var(--muted-solid); margin-top:4px; }
 
   .social-rows{
     display:flex;
@@ -692,11 +693,12 @@ function renderResult(rec){
       </div>
 
       <div class="section">
-        <h3>Readership${rec.readershipUpdated ? ` <span class="sub">(Last Updated ${escapeHtml(rec.readershipUpdated)})</span>` : ""}</h3>
+        <h3>Readership</h3>
         <div class="stat-grid">
           <div class="stat">
             <div class="label">Daily Pageviews (Hypestat.com)</div>
             <div class="value">${rec.readership ? escapeHtml(rec.readership) : "—"}</div>
+            ${rec.readershipUpdated ? `<div class="updated">Last Updated ${escapeHtml(rec.readershipUpdated)}</div>` : ""}
           </div>
         </div>
         <div class="subhead">Profile</div>

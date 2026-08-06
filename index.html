@@ -704,7 +704,7 @@ function renderResult(rec){
       </div>
 
       <div class="section">
-        <h3>Social Media Handles${rec.socialUpdated ? ` <span class="sub">(Last Updated ${escapeHtml(rec.socialUpdated)})</span>` : ""}</h3>
+        <h3>Social Media Handles</h3>
         <div class="social-rows">
           ${Object.keys(SOCIAL_ICONS).map(key => socialCardHTML(key, rec.social[key])).join("")}
         </div>

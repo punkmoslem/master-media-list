@@ -351,6 +351,8 @@
   }
   .social-icon img{ width:100%; height:100%; object-fit:contain; display:block; }
   .social-icon svg{ width:22px; height:22px; }
+  .social-icon svg.icon-lg{ width:34px; height:34px; }
+  .social-icon img.icon-lg{ transform:scale(1.8); }
   .social-meta .platform{ font-size:0.72rem; color:var(--muted-solid); text-transform:uppercase; letter-spacing:.04em;}
   .social-meta .handle{ font-weight:700; font-size:0.92rem; }
   .social-meta .handle a{ color:var(--navy); text-decoration:none; }
@@ -460,9 +462,9 @@ let activeIndex = -1;
 const SOCIAL_ICONS = {
   YT: {
     label:"YouTube", color:"#ff0000",
-    icon:`<svg viewBox="0 0 24 24" fill="#fff"><path d="M8.5 8.64v6.72L15.5 12 8.5 8.64z"/><path d="M0 0h24v24H0z" fill="none"/></svg>`
+    icon:`<svg class="icon-lg" viewBox="0 0 24 24" fill="#fff"><path d="M8.5 8.64v6.72L15.5 12 8.5 8.64z"/><path d="M0 0h24v24H0z" fill="none"/></svg>`
   },
-  IG: { label:"Instagram", color:"#d6249f", img:"icon-instagram.png" },
+  IG: { label:"Instagram", color:"#d6249f", img:"icon-instagram.png", imgClass:"icon-lg" },
   TikTok: { label:"TikTok", color:"#000000", img:"icon-tiktok.png" },
   X: {
     label:"X", color:"#000000",
@@ -626,7 +628,7 @@ function socialCardHTML(key, data){
   const meta = SOCIAL_ICONS[key];
   const has = data.user && data.user !== "-" && data.user !== "";
   const url = has ? socialUrl(key, data.user) : null;
-  const iconInner = meta.img ? `<img src="${meta.img}" alt="${meta.label}" />` : meta.icon;
+  const iconInner = meta.img ? `<img class="${meta.imgClass || ""}" src="${meta.img}" alt="${meta.label}" />` : meta.icon;
   const handleInner = has
     ? (url ? `<a href="${url}" target="_blank" rel="noopener">${escapeHtml(data.user)}</a>` : escapeHtml(data.user))
     : "Not available";

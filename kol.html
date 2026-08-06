@@ -309,21 +309,28 @@
   .profile-box a{ color:var(--teal-dark); }
   .profile-box.empty{ color:var(--muted-solid); font-style:italic; }
 
-  .social-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit, minmax(220px,1fr));
-    gap:12px;
+  .social-rows{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
   }
-  .social-card{
+  .social-row{
     border:1px solid var(--border);
     border-radius:12px;
-    padding:14px 16px;
+    padding:14px 18px;
+    display:grid;
+    grid-template-columns:1.4fr 1fr 1fr;
+    align-items:center;
+    gap:14px;
+    background:var(--bg);
+  }
+  .social-row.empty{ opacity:0.45; }
+  .social-row-handle{
     display:flex;
     align-items:center;
     gap:12px;
-    background:var(--bg);
+    min-width:0;
   }
-  .social-card.empty{ opacity:0.4; }
   .social-icon{
     width:40px; height:40px;
     border-radius:10px;
@@ -342,8 +349,18 @@
   .social-meta .handle{ font-weight:700; font-size:0.92rem; }
   .social-meta .handle a{ color:var(--navy); text-decoration:none; }
   .social-meta .handle a:hover{ color:var(--teal-dark); text-decoration:underline; }
-  .social-meta .followers{ font-size:0.78rem; color:var(--teal-dark); font-weight:600; }
-  .social-meta .er{ font-size:0.72rem; color:var(--muted-solid); margin-top:2px; }
+  .social-stat .label{ font-size:0.68rem; color:var(--muted-solid); text-transform:uppercase; letter-spacing:.04em; }
+  .social-stat .value{ font-size:0.9rem; font-weight:700; color:var(--navy); margin-top:2px; }
+  .social-stat .updated{ font-size:0.7rem; color:var(--muted-solid); margin-top:2px; }
+  .er-note{
+    margin-top:14px;
+    font-size:0.75rem;
+    color:var(--muted-solid);
+    font-style:italic;
+  }
+  @media (max-width:640px){
+    .social-row{ grid-template-columns:1fr; gap:8px; }
+  }
 
   footer{
     text-align:center;
@@ -572,15 +589,24 @@ function socialCardHTML(key, data){
   const handleInner = has
     ? (url ? `<a href="${url}" target="_blank" rel="noopener">${escapeHtml(data.user)}</a>` : escapeHtml(data.user))
     : "Not available";
-  const erText = has && data.er ? `Engagement Rate ${escapeHtml(data.er)}` : "";
   return `
-    <div class="social-card ${has ? "" : "empty"}">
-      <div class="social-icon" style="background:${meta.color}">${iconInner}</div>
-      <div class="social-meta">
-        <div class="platform">${meta.label}</div>
-        <div class="handle">${handleInner}</div>
-        ${has && data.followers ? `<div class="followers">${escapeHtml(data.followers)} followers</div>` : ""}
-        ${erText ? `<div class="er">${erText}</div>` : ""}
+    <div class="social-row ${has ? "" : "empty"}">
+      <div class="social-row-handle">
+        <div class="social-icon" style="background:${meta.color}">${iconInner}</div>
+        <div class="social-meta">
+          <div class="platform">${meta.label}</div>
+          <div class="handle">${handleInner}</div>
+        </div>
+      </div>
+      <div class="social-stat">
+        <div class="label">Followers</div>
+        <div class="value">${has && data.followers ? escapeHtml(data.followers) : "—"}</div>
+        ${has && data.updated ? `<div class="updated">Last Updated ${escapeHtml(data.updated)}</div>` : ""}
+      </div>
+      <div class="social-stat">
+        <div class="label">Engagement Rate</div>
+        <div class="value">${has && data.er ? escapeHtml(data.er) : "—"}</div>
+        ${has && data.er && data.erUpdated ? `<div class="updated">Last Updated ${escapeHtml(data.erUpdated)}</div>` : ""}
       </div>
     </div>
   `;
@@ -610,9 +636,10 @@ function renderResult(rec){
 
       <div class="section">
         <h3>Social Media Handles</h3>
-        <div class="social-grid">
+        <div class="social-rows">
           ${Object.keys(SOCIAL_ICONS).map(key => socialCardHTML(key, rec.social[key])).join("")}
         </div>
+        <div class="er-note">Engagement Rate values are based on the last 10 posts.</div>
       </div>
     </div>
   `;

@@ -367,6 +367,7 @@
   .social-meta .handle a:hover{ color:var(--teal-dark); text-decoration:underline; }
   .social-stat .label{ font-size:0.68rem; color:var(--muted-solid); text-transform:uppercase; letter-spacing:.04em; }
   .social-stat .value{ font-size:0.9rem; font-weight:700; color:var(--teal-dark); margin-top:2px; }
+  .social-stat .updated{ font-size:0.7rem; color:var(--muted-solid); margin-top:2px; }
   @media (max-width:640px){
     .social-row{ grid-template-columns:1fr; gap:8px; }
   }
@@ -544,11 +545,11 @@ function parseCSV(text){
       socialUpdated: get("YT Last Updated"),
       profile: get("Profil"),
       social: {
-        YT: { user: get("YT Username"), followers: get("YT Subscribers") },
-        IG: { user: get("IG Username"), followers: get("IG Followers") },
-        TikTok: { user: get("TikTok Username"), followers: get("TikTok Followers") },
-        X: { user: get("X Username"), followers: get("X Followers") },
-        Threads: { user: get("Threads Username"), followers: get("Threads Followers") }
+        YT: { user: get("YT Username"), followers: get("YT Subscribers"), updated: get("YT Last Updated") },
+        IG: { user: get("IG Username"), followers: get("IG Followers"), updated: get("IG Last Updated") },
+        TikTok: { user: get("TikTok Username"), followers: get("TikTok Followers"), updated: get("TikTok Last Updated") },
+        X: { user: get("X Username"), followers: get("X Followers"), updated: get("X Last Updated") },
+        Threads: { user: get("Threads Username"), followers: get("Threads Followers"), updated: get("Threads Last Updated") }
       },
       journalists
     };
@@ -656,6 +657,7 @@ function socialCardHTML(key, data){
       <div class="social-stat">
         <div class="label">Followers</div>
         <div class="value">${has && data.followers ? escapeHtml(data.followers) : "—"}</div>
+        ${has && data.updated ? `<div class="updated">Last Updated ${escapeHtml(data.updated)}</div>` : ""}
       </div>
     </div>
   `;

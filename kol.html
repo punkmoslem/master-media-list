@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Master Media List — R&amp;R Communications</title>
+<title>Master KOL List — R&amp;R Communications</title>
 <link rel="icon" href="logo.png" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <style>
@@ -309,25 +309,9 @@
   .profile-box a{ color:var(--teal-dark); }
   .profile-box.empty{ color:var(--muted-solid); font-style:italic; }
 
-  .stat-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit, minmax(180px,1fr));
-    gap:14px;
-  }
-  .stat{
-    background:var(--bg);
-    border:1px solid var(--border);
-    border-radius:12px;
-    padding:14px 16px;
-  }
-  .stat .label{ font-size:0.72rem; color:var(--muted-solid); text-transform:uppercase; letter-spacing:.04em;}
-  .stat .value{ font-size:1.15rem; font-weight:700; color:var(--navy); margin-top:4px; word-break:break-word;}
-  .stat .value a{ color:var(--teal-dark); text-decoration:none; }
-  .stat .value a:hover{ text-decoration:underline; }
-
   .social-grid{
     display:grid;
-    grid-template-columns:repeat(auto-fit, minmax(200px,1fr));
+    grid-template-columns:repeat(auto-fit, minmax(220px,1fr));
     gap:12px;
   }
   .social-card{
@@ -351,36 +335,13 @@
   }
   .social-icon img{ width:100%; height:100%; object-fit:contain; display:block; }
   .social-icon svg{ width:22px; height:22px; }
+  .social-meta{ min-width:0; }
   .social-meta .platform{ font-size:0.72rem; color:var(--muted-solid); text-transform:uppercase; letter-spacing:.04em;}
   .social-meta .handle{ font-weight:700; font-size:0.92rem; }
   .social-meta .handle a{ color:var(--navy); text-decoration:none; }
   .social-meta .handle a:hover{ color:var(--teal-dark); text-decoration:underline; }
   .social-meta .followers{ font-size:0.78rem; color:var(--teal-dark); font-weight:600; }
-
-  .journalist-list{
-    display:flex;
-    flex-direction:column;
-    gap:12px;
-  }
-  .journalist{
-    display:grid;
-    grid-template-columns:1fr 1fr 1fr;
-    gap:10px;
-    border:1px solid var(--border);
-    background:var(--bg);
-    border-radius:12px;
-    padding:14px 16px;
-  }
-  .journalist .jname{
-    font-weight:700;
-    color:var(--navy);
-    grid-column:1/-1;
-    font-size:1rem;
-  }
-  .journalist .jfield .label{ font-size:0.68rem; text-transform:uppercase; color:var(--muted-solid); letter-spacing:.04em;}
-  .journalist .jfield .val{ font-size:0.88rem; color:var(--text); word-break:break-word;}
-  .journalist .jfield .val a{ color:var(--teal-dark); text-decoration:none; }
-  .journalist .jfield .val a:hover{ text-decoration:underline; }
+  .social-meta .er{ font-size:0.72rem; color:var(--muted-solid); margin-top:2px; }
 
   footer{
     text-align:center;
@@ -395,7 +356,6 @@
     .search-box button{padding:10px 16px; font-size:0.85rem;}
     .card-header{padding:18px;}
     .section{padding:18px;}
-    .journalist{grid-template-columns:1fr;}
   }
 </style>
 </head>
@@ -404,8 +364,8 @@
 <header>
   <img src="logo.png" alt="R&R Communications logo" />
   <div class="title">
-    <h1>Master Media List</h1>
-    <p>Search media &amp; journalist database</p>
+    <h1>Master KOL List</h1>
+    <p>Search digital influencer / KOL database</p>
   </div>
   <div class="status">
     <span class="dot" id="statusDot"></span>
@@ -415,15 +375,15 @@
 </header>
 
 <div class="nav-tabs">
-  <a href="index.html" class="active">Master Media List</a>
-  <a href="kol.html">Master KOL List</a>
+  <a href="index.html">Master Media List</a>
+  <a href="kol.html" class="active">Master KOL List</a>
 </div>
 
 <main>
   <div class="search-wrap">
     <div class="search-box">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input id="searchInput" type="text" placeholder="Search media outlet or journalist name…" autocomplete="off" />
+      <input id="searchInput" type="text" placeholder="Search KOL / influencer name…" autocomplete="off" />
       <button id="searchBtn">Search</button>
     </div>
     <div class="suggestions" id="suggestions"></div>
@@ -433,17 +393,17 @@
   <div id="results">
     <div class="empty-state" id="emptyState">
       <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v5"/></svg>
-      <h2>No media selected yet</h2>
-      <p>Search for a media outlet or journalist above to see full details.</p>
+      <h2>No KOL selected yet</h2>
+      <p>Search for an influencer above to see full details.</p>
     </div>
   </div>
 </main>
 
-<footer>Live data synced from the Master Media List Google Sheet · R&amp;R Communications</footer>
+<footer>Live data synced from the Master KOL List Google Sheet · R&amp;R Communications</footer>
 
 <script>
-const SHEET_ID = "1F59-rVz9vJb59obojWpE9bWo91jefGu-nTrpzK6309k";
-const GID = "0";
+const SHEET_ID = "1LUyZHtuBtgYkVKwJqCPf-_RxbNaR-UaIebp15__ZxGc";
+const GID = "607842586";
 const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
 
 const statusDot = document.getElementById('statusDot');
@@ -498,47 +458,28 @@ function parseCSV(text){
   const idx = {};
   header.forEach((h,i)=>{ idx[h]=i; });
 
-  // detect repeating journalist blocks: Nama Jurnalis, Email, Phone, Desk (may repeat with suffixes)
-  const journalistStartCols = [];
-  header.forEach((h,i)=>{
-    if(/^Nama Jurnalis/i.test(h)) journalistStartCols.push(i);
-  });
-
   const data = [];
+  let entryNo = 0;
   for(let r=1; r<rows.length; r++){
     const row = rows[r];
     if(!row || row.every(c => cleanCell(c)==="")) continue;
-    const get = (name) => cleanCell(row[idx[name]]);
+    const get = (name) => idx[name] !== undefined ? cleanCell(row[idx[name]]) : "";
 
-    const journalists = [];
-    journalistStartCols.forEach(startCol => {
-      const nameV = cleanCell(row[startCol]);
-      const email = cleanCell(row[startCol+1]);
-      const phone = cleanCell(row[startCol+2]);
-      const desk = cleanCell(row[startCol+3]);
-      if(nameV || email || phone || desk){
-        journalists.push({ name: nameV || "—", email, phone, desk });
-      }
-    });
-
+    entryNo++;
     const rec = {
-      no: get("No"),
-      media: get("Media"),
-      tier: get("Tier"),
-      readership: header.find(h=>/^Readerships/i.test(h)) ? cleanCell(row[idx[header.find(h=>/^Readerships/i.test(h))]]) : "",
-      readershipUpdated: header.find(h=>/^Hypestat/i.test(h)) ? cleanCell(row[idx[header.find(h=>/^Hypestat/i.test(h))]]) : "",
-      socialUpdated: get("YT Last Updated"),
-      profile: get("Profil"),
+      no: entryNo,
+      name: get("Handler"),
+      category: get("Category (Tech KoL/Media)"),
+      profile: get("Profile"),
       social: {
-        YT: { user: get("YT Username"), followers: get("YT Subscribers") },
-        IG: { user: get("IG Username"), followers: get("IG Followers") },
-        TikTok: { user: get("TikTok Username"), followers: get("TikTok Followers") },
-        X: { user: get("X Username"), followers: get("X Followers") },
-        Threads: { user: get("Threads Username"), followers: get("Threads Followers") }
-      },
-      journalists
+        YT: { user: get("YT Username"), followers: get("YT Subscribers"), updated: get("YT Last Updated"), er: get("ER - YouTube"), erUpdated: get("YT ER Last Updated") },
+        IG: { user: get("IG Username"), followers: get("IG Followers"), updated: get("IG Last Updated"), er: get("ER - Instagram"), erUpdated: get("IG ER Last Updated") },
+        TikTok: { user: get("TikTok Username"), followers: get("TikTok Followers"), updated: get("TikTok Last Updated"), er: get("ER - TikTok"), erUpdated: get("TikTok ER Last Updated") },
+        X: { user: get("X Username"), followers: get("X Followers"), updated: get("X Last Updated"), er: get("ER - X"), erUpdated: get("X ER Last Updated") },
+        Threads: { user: get("Threads Username"), followers: get("Threads Followers"), updated: get("Threads Last Updated"), er: get("ER - Threads"), erUpdated: get("Threads ER Last Updated") }
+      }
     };
-    if(rec.media) data.push(rec);
+    if(rec.name) data.push(rec);
   }
   return data;
 }
@@ -553,7 +494,7 @@ async function loadData(showStatus=true){
     if(!res.ok) throw new Error("HTTP " + res.status);
     const text = await res.text();
     records = parseCSV(text);
-    statusText.textContent = `${records.length} media loaded`;
+    statusText.textContent = `${records.length} KOLs loaded`;
     statusDot.style.background = "var(--teal)";
   }catch(err){
     console.error(err);
@@ -575,8 +516,7 @@ function highlight(text, query){
 
 function matchRecord(rec, q){
   const query = q.toLowerCase();
-  if(rec.media.toLowerCase().includes(query)) return true;
-  return rec.journalists.some(j => j.name.toLowerCase().includes(query));
+  return rec.name.toLowerCase().includes(query);
 }
 
 function renderSuggestions(query){
@@ -592,19 +532,19 @@ function renderSuggestions(query){
     return;
   }
   suggestionsEl.innerHTML = matches.map((r,i) => `
-    <div class="suggestion-item" data-index="${i}" data-media="${escapeHtml(r.media)}">
-      <span class="name">${highlight(r.media, query)}</span>
-      <span class="tier">${escapeHtml(r.tier || "—")}</span>
+    <div class="suggestion-item" data-index="${i}" data-name="${escapeHtml(r.name)}">
+      <span class="name">${highlight(r.name, query)}</span>
+      <span class="tier">${escapeHtml(r.category || "—")}</span>
     </div>
   `).join("");
   suggestionsEl.classList.add('open');
   activeIndex = -1;
   [...suggestionsEl.querySelectorAll('.suggestion-item')].forEach(el => {
     el.addEventListener('click', () => {
-      const media = el.getAttribute('data-media');
-      searchInput.value = media;
+      const name = el.getAttribute('data-name');
+      searchInput.value = name;
       suggestionsEl.classList.remove('open');
-      doSearch(media);
+      doSearch(name);
     });
   });
 }
@@ -612,11 +552,11 @@ function renderSuggestions(query){
 function doSearch(q){
   const query = norm(q || searchInput.value);
   if(!query) return;
-  const exact = records.find(r => r.media.toLowerCase() === query.toLowerCase());
+  const exact = records.find(r => r.name.toLowerCase() === query.toLowerCase());
   const rec = exact || records.find(r => matchRecord(r, query));
   suggestionsEl.classList.remove('open');
   if(!rec){
-    resultsEl.innerHTML = `<div class="empty-state"><h2>No results for "${escapeHtml(query)}"</h2><p>Try a different media name or journalist name.</p></div>`;
+    resultsEl.innerHTML = `<div class="empty-state"><h2>No results for "${escapeHtml(query)}"</h2><p>Try a different KOL name.</p></div>`;
     return;
   }
   renderResult(rec);
@@ -630,6 +570,7 @@ function socialCardHTML(key, data){
   const handleInner = has
     ? (url ? `<a href="${url}" target="_blank" rel="noopener">${escapeHtml(data.user)}</a>` : escapeHtml(data.user))
     : "Not available";
+  const erText = has && data.er ? `Engagement Rate ${escapeHtml(data.er)}` : "";
   return `
     <div class="social-card ${has ? "" : "empty"}">
       <div class="social-icon" style="background:${meta.color}">${iconInner}</div>
@@ -637,6 +578,7 @@ function socialCardHTML(key, data){
         <div class="platform">${meta.label}</div>
         <div class="handle">${handleInner}</div>
         ${has && data.followers ? `<div class="followers">${escapeHtml(data.followers)} followers</div>` : ""}
+        ${erText ? `<div class="er">${erText}</div>` : ""}
       </div>
     </div>
   `;
@@ -647,51 +589,28 @@ function renderResult(rec){
     ? (rec.profile.startsWith("http") ? `<a href="${escapeHtml(rec.profile)}" target="_blank" rel="noopener">${escapeHtml(rec.profile)}</a>` : escapeHtml(rec.profile))
     : "Not available";
 
-  const journalistsHtml = rec.journalists.length
-    ? rec.journalists.map(j => `
-      <div class="journalist">
-        <div class="jname">${escapeHtml(j.name)}</div>
-        <div class="jfield"><div class="label">Email</div><div class="val">${j.email ? `<a href="mailto:${escapeHtml(j.email)}">${escapeHtml(j.email)}</a>` : "—"}</div></div>
-        <div class="jfield"><div class="label">Phone</div><div class="val">${j.phone ? `<a href="https://wa.me/${escapeHtml(j.phone.replace(/\D/g,''))}" target="_blank" rel="noopener">${escapeHtml(j.phone)}</a>` : "—"}</div></div>
-        <div class="jfield"><div class="label">Desk</div><div class="val">${escapeHtml(j.desk) || "—"}</div></div>
-      </div>
-    `).join("")
-    : `<p style="color:var(--muted-solid); font-size:0.9rem;">No journalist details on file.</p>`;
-
   resultsEl.innerHTML = `
     <div class="card">
       <div class="card-header">
         <div>
-          <div class="no">Entry #${escapeHtml(rec.no)}</div>
-          <h2>${escapeHtml(rec.media)}</h2>
+          <div class="no">Entry #${escapeHtml(String(rec.no))}</div>
+          <h2>${escapeHtml(rec.name)}</h2>
         </div>
         <div class="badge-row">
-          ${rec.tier ? `<span class="badge tier">${escapeHtml(rec.tier)}</span>` : ""}
+          ${rec.category ? `<span class="badge tier">${escapeHtml(rec.category)}</span>` : ""}
         </div>
       </div>
 
       <div class="section">
-        <h3>Readership${rec.readershipUpdated ? ` <span class="sub">(Last Updated ${escapeHtml(rec.readershipUpdated)})</span>` : ""}</h3>
-        <div class="stat-grid">
-          <div class="stat">
-            <div class="label">Daily Pageviews (Hypestat.com)</div>
-            <div class="value">${rec.readership ? escapeHtml(rec.readership) : "—"}</div>
-          </div>
-        </div>
-        <div class="subhead">Profile</div>
+        <h3>Profile</h3>
         <div class="profile-box ${rec.profile && rec.profile !== "-" ? "" : "empty"}">${profileHtml}</div>
       </div>
 
       <div class="section">
-        <h3>Social Media Handles${rec.socialUpdated ? ` <span class="sub">(Last Updated ${escapeHtml(rec.socialUpdated)})</span>` : ""}</h3>
+        <h3>Social Media Handles</h3>
         <div class="social-grid">
           ${Object.keys(SOCIAL_ICONS).map(key => socialCardHTML(key, rec.social[key])).join("")}
         </div>
-      </div>
-
-      <div class="section">
-        <h3>Journalist Details</h3>
-        <div class="journalist-list">${journalistsHtml}</div>
       </div>
     </div>
   `;
@@ -699,7 +618,7 @@ function renderResult(rec){
 
 searchInput.addEventListener('input', () => renderSuggestions(searchInput.value.trim()));
 searchInput.addEventListener('keydown', (e) => {
-  const items = [...suggestionsEl.querySelectorAll('.suggestion-item[data-media]')];
+  const items = [...suggestionsEl.querySelectorAll('.suggestion-item[data-name]')];
   if(e.key === 'ArrowDown'){
     e.preventDefault();
     activeIndex = Math.min(activeIndex+1, items.length-1);
@@ -711,9 +630,9 @@ searchInput.addEventListener('keydown', (e) => {
     items.forEach((it,i)=>it.classList.toggle('active', i===activeIndex));
   } else if(e.key === 'Enter'){
     if(activeIndex >= 0 && items[activeIndex]){
-      const media = items[activeIndex].getAttribute('data-media');
-      searchInput.value = media;
-      doSearch(media);
+      const name = items[activeIndex].getAttribute('data-name');
+      searchInput.value = name;
+      doSearch(name);
     } else {
       doSearch();
     }

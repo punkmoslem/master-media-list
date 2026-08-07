@@ -1,0 +1,717 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Compare — R&amp;R Communications</title>
+<link rel="icon" href="logo.png" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+  :root{
+    --navy:#2c3e50;
+    --navy-dark:#1c2a38;
+    --teal:#17a68d;
+    --teal-dark:#128a75;
+    --bg:#f4f7f7;
+    --card:#ffffff;
+    --border:#e2e8e7;
+    --text:#22303a;
+    --muted:#66798591;
+    --muted-solid:#63767f;
+    --shadow: 0 4px 18px rgba(28,42,56,0.08);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Helvetica Neue', Arial, sans-serif;
+    background:
+      radial-gradient(circle at 15% 0%, rgba(23,166,141,0.08), transparent 40%),
+      radial-gradient(circle at 100% 20%, rgba(44,62,80,0.06), transparent 45%),
+      var(--bg);
+    color:var(--text);
+    min-height:100vh;
+  }
+  header{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    padding:22px 32px;
+    background:linear-gradient(120deg, var(--navy-dark), var(--navy));
+    box-shadow: var(--shadow);
+    position:sticky;
+    top:0;
+    z-index:10;
+  }
+  header img{ height:42px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3)); }
+  header .title{ color:#fff; }
+  header .title h1{ margin:0; font-size:1.25rem; font-weight:700; letter-spacing:0.02em; }
+  header .title p{ margin:2px 0 0; font-size:0.78rem; color:#b9c6cf; letter-spacing:0.03em; }
+  header .status{
+    margin-left:auto;
+    display:flex; align-items:center; gap:10px;
+    font-size:0.78rem; color:#cfe0dc;
+  }
+  header .dot{
+    width:8px;height:8px;border-radius:50%;
+    background: var(--teal);
+    box-shadow:0 0 0 3px rgba(23,166,141,0.25);
+  }
+  header button.refresh{
+    background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.25);
+    color:#fff; border-radius:8px;
+    padding:6px 12px; font-size:0.78rem;
+    cursor:pointer; transition:background .15s;
+  }
+  header button.refresh:hover{ background:rgba(255,255,255,0.18); }
+
+  .nav-tabs{
+    display:flex; gap:8px; flex-wrap:wrap;
+    max-width:1180px; margin:0 auto;
+    padding:16px 20px 0;
+  }
+  .nav-tabs a{
+    padding:8px 18px; border-radius:999px;
+    font-size:0.85rem; font-weight:600;
+    text-decoration:none; color:var(--muted-solid);
+    background:var(--card); border:1px solid var(--border);
+    transition:all .15s;
+  }
+  .nav-tabs a:hover{ color:var(--teal-dark); border-color:var(--teal); }
+  .nav-tabs a.active{
+    background:linear-gradient(120deg, var(--teal), var(--teal-dark));
+    color:#fff; border-color:transparent;
+  }
+
+  main{ max-width:1180px; margin:0 auto; padding:24px 20px 80px; }
+
+  .toolbar{
+    display:flex; align-items:center; gap:10px;
+    flex-wrap:wrap; margin-bottom:16px;
+  }
+  .seg{
+    display:inline-flex;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:999px;
+    padding:4px;
+    box-shadow:var(--shadow);
+  }
+  .seg button{
+    border:none; background:transparent;
+    padding:8px 18px; border-radius:999px;
+    font-size:0.85rem; font-weight:600;
+    color:var(--muted-solid); cursor:pointer;
+    transition:all .15s; white-space:nowrap;
+  }
+  .seg button.active{
+    background:linear-gradient(120deg, var(--teal), var(--teal-dark));
+    color:#fff;
+  }
+  .counter{
+    margin-left:auto;
+    font-size:0.8rem; color:var(--muted-solid);
+  }
+  .counter b{ color:var(--teal-dark); }
+  .btn-clear{
+    background:transparent; border:1px solid var(--border);
+    color:var(--muted-solid); border-radius:8px;
+    padding:7px 14px; font-size:0.8rem; cursor:pointer;
+    transition:all .15s;
+  }
+  .btn-clear:hover{ border-color:#d9534f; color:#d9534f; }
+
+  .search-wrap{ position:relative; }
+  .search-box{
+    display:flex; align-items:center;
+    background:var(--card);
+    border:1.5px solid var(--border);
+    border-radius:14px; box-shadow:var(--shadow);
+    padding:6px 6px 6px 18px;
+    transition:border-color .15s, box-shadow .15s;
+  }
+  .search-box:focus-within{
+    border-color:var(--teal);
+    box-shadow:0 0 0 4px rgba(23,166,141,0.12), var(--shadow);
+  }
+  .search-box svg{ flex-shrink:0; color:var(--muted-solid); }
+  .search-box input{
+    flex:1; border:none; outline:none;
+    font-size:1rem; padding:14px 10px;
+    background:transparent; color:var(--text);
+  }
+  .search-box input::placeholder{ color:#9aacb2; }
+  .search-box input:disabled{ cursor:not-allowed; }
+
+  .suggestions{
+    position:absolute; top:calc(100% + 8px);
+    left:0; right:0;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:12px; box-shadow:var(--shadow);
+    overflow:hidden; z-index:20;
+    max-height:340px; overflow-y:auto;
+    display:none;
+  }
+  .suggestions.open{ display:block; }
+  .suggestion-item{
+    padding:12px 18px; cursor:pointer;
+    display:flex; align-items:center;
+    justify-content:space-between; gap:10px;
+    border-bottom:1px solid var(--border);
+  }
+  .suggestion-item:last-child{ border-bottom:none; }
+  .suggestion-item:hover, .suggestion-item.active{ background: rgba(23,166,141,0.08); }
+  .suggestion-item .name{ font-weight:600; }
+  .suggestion-item .name mark{ background:rgba(23,166,141,0.25); color:inherit; border-radius:3px; }
+  .suggestion-item.picked{ opacity:0.45; }
+  .suggestion-item .tier{
+    font-size:0.72rem; padding:3px 9px;
+    border-radius:999px; background:var(--navy);
+    color:#fff; white-space:nowrap;
+  }
+
+  .chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+  .chip{
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--card); border:1px solid var(--border);
+    border-radius:999px; padding:6px 8px 6px 14px;
+    font-size:0.85rem; font-weight:600;
+    box-shadow:0 1px 4px rgba(28,42,56,0.05);
+  }
+  .chip button{
+    border:none; background:rgba(44,62,80,0.08);
+    color:var(--muted-solid); cursor:pointer;
+    width:20px; height:20px; border-radius:50%;
+    font-size:0.9rem; line-height:1;
+    display:flex; align-items:center; justify-content:center;
+    transition:all .15s;
+  }
+  .chip button:hover{ background:#d9534f; color:#fff; }
+
+  .platform-tabs{
+    display:flex; gap:6px; flex-wrap:wrap;
+    margin:26px 0 14px;
+  }
+  .platform-tabs button{
+    display:inline-flex; align-items:center; gap:7px;
+    padding:7px 14px; border-radius:10px;
+    font-size:0.82rem; font-weight:600;
+    background:var(--card); border:1px solid var(--border);
+    color:var(--muted-solid); cursor:pointer;
+    transition:all .15s;
+  }
+  .platform-tabs button:hover{ border-color:var(--teal); color:var(--teal-dark); }
+  .platform-tabs button.active{ background:var(--navy); border-color:var(--navy); color:#fff; }
+  .platform-tabs .pico{
+    width:18px; height:18px; border-radius:5px;
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0; overflow:hidden;
+  }
+  .platform-tabs .pico svg{ width:12px; height:12px; }
+  .platform-tabs .pico img{ width:100%; height:100%; object-fit:contain; }
+
+  .table-wrap{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px; box-shadow:var(--shadow);
+    overflow-x:auto;
+    animation: fadeIn .25s ease;
+  }
+  @keyframes fadeIn{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+  table{ width:100%; border-collapse:collapse; font-size:0.9rem; }
+  thead th{
+    background:linear-gradient(120deg, var(--navy-dark), var(--navy));
+    color:#fff; text-align:left;
+    padding:14px 16px; font-size:0.72rem;
+    text-transform:uppercase; letter-spacing:.06em;
+    white-space:nowrap; cursor:pointer;
+    user-select:none; transition:background .15s;
+  }
+  thead th:hover{ background:var(--teal-dark); }
+  thead th.nosort{ cursor:default; }
+  thead th.nosort:hover{ background:linear-gradient(120deg, var(--navy-dark), var(--navy)); }
+  thead th .arrow{ opacity:0.5; margin-left:5px; font-size:0.7rem; }
+  thead th.sorted .arrow{ opacity:1; }
+  tbody td{
+    padding:13px 16px;
+    border-bottom:1px solid var(--border);
+    vertical-align:middle;
+  }
+  tbody tr:last-child td{ border-bottom:none; }
+  tbody tr:hover{ background:rgba(23,166,141,0.045); }
+  td.name{ font-weight:700; color:var(--navy); white-space:nowrap; }
+  td.handle a{ color:var(--teal-dark); text-decoration:none; font-weight:600; }
+  td.handle a:hover{ text-decoration:underline; }
+  td.num{ font-weight:700; color:var(--teal-dark); white-space:nowrap; }
+  td.num.best{ position:relative; }
+  td.num.best::after{
+    content:"BEST"; margin-left:8px;
+    font-size:0.55rem; font-weight:700;
+    letter-spacing:.06em; vertical-align:middle;
+    background:var(--teal); color:#fff;
+    padding:2px 6px; border-radius:999px;
+  }
+  td .updated{ font-size:0.5rem; color:var(--muted-solid); margin-top:2px; font-weight:400; }
+  td.dash{ color:var(--muted-solid); }
+
+  .hint{ text-align:center; color:var(--muted-solid); font-size:0.85rem; margin-top:14px; }
+  .note{ font-size:0.72rem; color:var(--muted-solid); font-style:italic; margin-top:12px; }
+  .empty-state{ text-align:center; color:var(--muted-solid); padding:60px 20px; }
+  .empty-state h2{ color:var(--navy); font-size:1.1rem; margin-bottom:6px;}
+  .empty-state svg{ opacity:0.35; margin-bottom:14px; }
+
+  footer{ text-align:center; color:var(--muted-solid); font-size:0.75rem; padding:30px 20px 40px; }
+
+  @media (max-width:600px){
+    header{padding:16px 18px;}
+    .search-box button{padding:10px 16px; font-size:0.85rem;}
+    .counter{ margin-left:0; width:100%; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <img src="logo.png" alt="R&R Communications logo" />
+  <div class="title">
+    <h1>Compare</h1>
+    <p>Side-by-side comparison of media outlets &amp; KOLs</p>
+  </div>
+  <div class="status">
+    <span class="dot" id="statusDot"></span>
+    <span id="statusText">Loading…</span>
+    <button class="refresh" id="refreshBtn">Refresh</button>
+  </div>
+</header>
+
+<div class="nav-tabs">
+  <a href="index.html">Master Media List</a>
+  <a href="kol.html">Master KOL List</a>
+  <a href="compare.html" class="active">Compare</a>
+</div>
+
+<main>
+  <div class="toolbar">
+    <div class="seg">
+      <button id="modeKol" class="active" data-mode="kol">Master KOL List</button>
+      <button id="modeMedia" data-mode="media">Master Media List</button>
+    </div>
+    <span class="counter"><b id="countNow">0</b> / 10 selected</span>
+    <button class="btn-clear" id="clearBtn">Clear all</button>
+  </div>
+
+  <div class="search-wrap">
+    <div class="search-box">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="searchInput" type="text" placeholder="Add a name to compare…" autocomplete="off" />
+    </div>
+    <div class="suggestions" id="suggestions"></div>
+  </div>
+
+  <div class="chips" id="chips"></div>
+
+  <div id="results">
+    <div class="empty-state" id="emptyState">
+      <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 20h5V10H3zM10 20h5V4h-5zM17 20h5v-7h-5z"/></svg>
+      <h2>Nothing to compare yet</h2>
+      <p>Add up to 10 names above to see them side by side.</p>
+    </div>
+  </div>
+</main>
+
+<footer>Live data synced from the Master Media List &amp; Master KOL List Google Sheets · R&amp;R Communications</footer>
+
+<script>
+const SHEETS = {
+  kol:   { id:"1LUyZHtuBtgYkVKwJqCPf-_RxbNaR-UaIebp15__ZxGc", gid:"607842586" },
+  media: { id:"1F59-rVz9vJb59obojWpE9bWo91jefGu-nTrpzK6309k", gid:"0" }
+};
+const MAX = 10;
+
+const statusDot = document.getElementById('statusDot');
+const statusText = document.getElementById('statusText');
+const refreshBtn = document.getElementById('refreshBtn');
+const searchInput = document.getElementById('searchInput');
+const suggestionsEl = document.getElementById('suggestions');
+const resultsEl = document.getElementById('results');
+const chipsEl = document.getElementById('chips');
+const countNow = document.getElementById('countNow');
+const clearBtn = document.getElementById('clearBtn');
+
+let mode = "kol";
+let cache = { kol:null, media:null };
+let selected = { kol:[], media:[] };
+let activeIndex = -1;
+let platform = "YT";
+let sort = { col:null, dir:-1 };
+
+const SOCIAL_ICONS = {
+  YT: {
+    label:"YouTube", color:"#ff0000",
+    icon:`<svg viewBox="0 0 24 24" fill="#fff"><path d="M8.5 8.64v6.72L15.5 12 8.5 8.64z"/></svg>`
+  },
+  IG: { label:"Instagram", color:"#d6249f", img:"icon-instagram.png" },
+  TikTok: { label:"TikTok", color:"#000000", img:"icon-tiktok.png" },
+  X: {
+    label:"X", color:"#000000",
+    icon:`<svg viewBox="0 0 24 24" fill="#fff"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.9l-5.4-6.6L4.5 22H1.4l8.1-9.3L1 2h7.1l4.9 6.1L18.9 2zm-1.2 18h1.9L7.4 4H5.4l12.3 16z"/></svg>`
+  },
+  Threads: {
+    label:"Threads", color:"#000000",
+    icon:`<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3c-4.4 0-7 2.7-7 7v4c0 4.3 2.6 7 7 7s7-2.7 7-7"/><path d="M12 8.3c2.6 0 4 1.2 4 3.1 0 2-1.6 3.1-3.7 3.1-1.8 0-2.8-.8-2.8-1.9 0-1.3 1.4-2 3.4-2 1.7 0 3 .4 3.7 1"/></svg>`
+  }
+};
+const PLATFORM_ORDER = ["YT","IG","TikTok","X","Threads"];
+
+function socialUrl(key, user){
+  if(!user || user === "-") return null;
+  const handle = user.replace(/^@/, "").trim();
+  if(!handle) return null;
+  switch(key){
+    case "YT": return `https://www.youtube.com/${user.startsWith("@") ? user : "@"+handle}`;
+    case "IG": return `https://www.instagram.com/${handle}`;
+    case "TikTok": return `https://www.tiktok.com/@${handle}`;
+    case "X": return `https://x.com/${handle}`;
+    case "Threads": return `https://www.threads.net/@${handle}`;
+    default: return null;
+  }
+}
+
+function norm(s){ return (s||"").toString().trim(); }
+function cleanCell(s){ return norm(s).replace(/\s+/g," ").trim(); }
+function escapeHtml(s){
+  return (s||"").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function highlight(text, query){
+  if(!query) return escapeHtml(text);
+  const i = text.toLowerCase().indexOf(query.toLowerCase());
+  if(i === -1) return escapeHtml(text);
+  return escapeHtml(text.slice(0,i)) + "<mark>" + escapeHtml(text.slice(i, i+query.length)) + "</mark>" + escapeHtml(text.slice(i+query.length));
+}
+// "14,100,000" -> 14100000 ; "1.06%" -> 1.06 ; "" / "-" -> null
+function toNum(v){
+  if(!v) return null;
+  const n = parseFloat(v.replace(/[^0-9.\-]/g, ""));
+  return isNaN(n) ? null : n;
+}
+
+function parseKOL(text){
+  const rows = Papa.parse(text, { skipEmptyLines:true }).data;
+  const header = rows[0].map(cleanCell);
+  const idx = {}; header.forEach((h,i)=>{ idx[h]=i; });
+  const data = [];
+  for(let r=1; r<rows.length; r++){
+    const row = rows[r];
+    if(!row || row.every(c => cleanCell(c)==="")) continue;
+    const get = n => idx[n] !== undefined ? cleanCell(row[idx[n]]) : "";
+    const rec = {
+      name: get("Handler"),
+      tier: get("Category (Tech KoL/Media)"),
+      social: {
+        YT:      { user:get("YT Username"),      followers:get("YT Subscribers"),   updated:get("YT Last Updated"),      er:get("ER - YouTube"),   erUpdated:get("YT ER Last Updated"),      views:get("YouTube Avg Views (30 posts)"),   viewsUpdated:get("YouTube Avg Views Last Updated") },
+        IG:      { user:get("IG Username"),      followers:get("IG Followers"),     updated:get("IG Last Updated"),      er:get("ER - Instagram"), erUpdated:get("IG ER Last Updated"),      views:get("Instagram Avg Views (30 posts)"), viewsUpdated:get("Instagram Avg Views Last Updated") },
+        TikTok:  { user:get("TikTok Username"),  followers:get("TikTok Followers"), updated:get("TikTok Last Updated"),  er:get("ER - TikTok"),    erUpdated:get("TikTok ER Last Updated"),  views:get("TikTok Avg Views (30 posts)"),    viewsUpdated:get("TikTok Avg Views Last Updated") },
+        X:       { user:get("X Username"),       followers:get("X Followers"),      updated:get("X Last Updated"),       er:get("ER - X"),         erUpdated:get("X ER Last Updated"),       views:get("X Avg Views (30 posts)"),         viewsUpdated:get("X Avg Views Last Updated") },
+        Threads: { user:get("Threads Username"), followers:get("Threads Followers"),updated:get("Threads Last Updated"), er:get("ER - Threads"),   erUpdated:get("Threads ER Last Updated"), views:get("Threads Avg Views (30 posts)"),   viewsUpdated:get("Threads Avg Views Last Updated") }
+      }
+    };
+    if(rec.name) data.push(rec);
+  }
+  return data;
+}
+
+function parseMedia(text){
+  const rows = Papa.parse(text, { skipEmptyLines:true }).data;
+  const header = rows[0].map(cleanCell);
+  const idx = {}; header.forEach((h,i)=>{ idx[h]=i; });
+  const readKey = header.find(h=>/^Readerships/i.test(h));
+  const readUpdKey = header.find(h=>/^Hypestat/i.test(h));
+  const data = [];
+  for(let r=1; r<rows.length; r++){
+    const row = rows[r];
+    if(!row || row.every(c => cleanCell(c)==="")) continue;
+    const get = n => idx[n] !== undefined ? cleanCell(row[idx[n]]) : "";
+    const rec = {
+      name: get("Media"),
+      tier: get("Tier"),
+      readership: readKey ? cleanCell(row[idx[readKey]]) : "",
+      readershipUpdated: readUpdKey ? cleanCell(row[idx[readUpdKey]]) : "",
+      social: {
+        YT:      { user:get("YT Username"),      followers:get("YT Subscribers"),    updated:get("YT Last Updated") },
+        IG:      { user:get("IG Username"),      followers:get("IG Followers"),      updated:get("IG Last Updated") },
+        TikTok:  { user:get("TikTok Username"),  followers:get("TikTok Followers"),  updated:get("TikTok Last Updated") },
+        X:       { user:get("X Username"),       followers:get("X Followers"),       updated:get("X Last Updated") },
+        Threads: { user:get("Threads Username"), followers:get("Threads Followers"), updated:get("Threads Last Updated") }
+      }
+    };
+    if(rec.name) data.push(rec);
+  }
+  return data;
+}
+
+async function loadData(which, force=false){
+  if(cache[which] && !force) return cache[which];
+  statusText.textContent = "Loading…";
+  statusDot.style.background = "#f4c542";
+  const s = SHEETS[which];
+  const url = `https://docs.google.com/spreadsheets/d/${s.id}/export?format=csv&gid=${s.gid}&cachebust=${Date.now()}`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error("HTTP " + res.status);
+  const text = await res.text();
+  cache[which] = which === "kol" ? parseKOL(text) : parseMedia(text);
+  return cache[which];
+}
+
+async function activate(which, force=false){
+  mode = which;
+  document.querySelectorAll('.seg button').forEach(b => b.classList.toggle('active', b.dataset.mode === which));
+  searchInput.placeholder = which === "kol" ? "Add a KOL / influencer name…" : "Add a media outlet name…";
+  if(mode === "media" && platform === "AVG") platform = "READ";
+  if(mode === "kol" && platform === "READ") platform = "YT";
+  try{
+    await loadData(which, force);
+    statusText.textContent = `${cache[which].length} ${which === "kol" ? "KOLs" : "media"} loaded`;
+    statusDot.style.background = "var(--teal)";
+  }catch(err){
+    statusText.textContent = "Load failed";
+    statusDot.style.background = "#d9534f";
+    console.error(err);
+  }
+  closeSuggestions();
+  searchInput.value = "";
+  render();
+}
+
+function currentRecords(){ return cache[mode] || []; }
+function currentSelection(){ return selected[mode]; }
+
+/* ---------- autocomplete ---------- */
+function matches(q){
+  const query = q.toLowerCase();
+  return currentRecords().filter(r => r.name.toLowerCase().includes(query)).slice(0, 12);
+}
+function closeSuggestions(){
+  suggestionsEl.classList.remove('open');
+  suggestionsEl.innerHTML = "";
+  activeIndex = -1;
+}
+function renderSuggestions(q){
+  const list = matches(q);
+  if(!list.length){ closeSuggestions(); return; }
+  const picked = new Set(currentSelection().map(r => r.name));
+  suggestionsEl.innerHTML = list.map((r,i) => `
+    <div class="suggestion-item ${picked.has(r.name) ? "picked" : ""}" data-i="${i}">
+      <span class="name">${highlight(r.name, q)}</span>
+      ${r.tier ? `<span class="tier">${escapeHtml(r.tier)}</span>` : ""}
+    </div>`).join("");
+  suggestionsEl.classList.add('open');
+  activeIndex = -1;
+  suggestionsEl.querySelectorAll('.suggestion-item').forEach(el => {
+    el.addEventListener('click', () => addRecord(list[+el.dataset.i]));
+  });
+  suggestionsEl._list = list;
+}
+
+function addRecord(rec){
+  const sel = currentSelection();
+  if(sel.length >= MAX){
+    searchInput.value = "";
+    closeSuggestions();
+    return;
+  }
+  if(!sel.some(r => r.name === rec.name)) sel.push(rec);
+  searchInput.value = "";
+  closeSuggestions();
+  render();
+  searchInput.focus();
+}
+function removeRecord(name){
+  selected[mode] = currentSelection().filter(r => r.name !== name);
+  render();
+}
+
+searchInput.addEventListener('input', () => {
+  const q = searchInput.value.trim();
+  if(q.length < 2){ closeSuggestions(); return; }
+  renderSuggestions(q);
+});
+searchInput.addEventListener('keydown', e => {
+  const items = suggestionsEl.querySelectorAll('.suggestion-item');
+  if(!items.length) return;
+  if(e.key === "ArrowDown"){
+    e.preventDefault();
+    activeIndex = (activeIndex + 1) % items.length;
+  }else if(e.key === "ArrowUp"){
+    e.preventDefault();
+    activeIndex = (activeIndex - 1 + items.length) % items.length;
+  }else if(e.key === "Enter"){
+    e.preventDefault();
+    const pick = activeIndex >= 0 ? activeIndex : 0;
+    addRecord(suggestionsEl._list[pick]);
+    return;
+  }else if(e.key === "Escape"){
+    closeSuggestions();
+    return;
+  }else return;
+  items.forEach((el,i) => el.classList.toggle('active', i === activeIndex));
+});
+document.addEventListener('click', e => {
+  if(!e.target.closest('.search-wrap')) closeSuggestions();
+});
+
+clearBtn.addEventListener('click', () => { selected[mode] = []; render(); });
+document.querySelectorAll('.seg button').forEach(b => {
+  b.addEventListener('click', () => activate(b.dataset.mode));
+});
+refreshBtn.addEventListener('click', () => activate(mode, true));
+
+/* ---------- table ---------- */
+function columnsFor(){
+  if(mode === "media" && platform === "READ"){
+    return [
+      { key:"name",   label:"Media",  type:"name" },
+      { key:"tier",   label:"Tier",   type:"text" },
+      { key:"read",   label:"Daily Pageviews (Hypestat.com)", type:"num" }
+    ];
+  }
+  const cols = [
+    { key:"name",      label: mode === "kol" ? "KOL" : "Media", type:"name" },
+    { key:"handle",    label:"Handle",    type:"handle" },
+    { key:"followers", label:"Followers", type:"num" }
+  ];
+  if(mode === "kol"){
+    cols.push({ key:"views", label:"Avg Views", type:"num" });
+    cols.push({ key:"er",    label:"Engagement Rate", type:"num" });
+  }
+  return cols;
+}
+
+function cellData(rec, col){
+  if(col.key === "name") return { text: rec.name };
+  if(col.key === "tier") return { text: rec.tier };
+  if(col.key === "read") return { text: rec.readership, updated: rec.readershipUpdated };
+  const s = rec.social[platform] || {};
+  const has = s.user && s.user !== "-";
+  if(col.key === "handle") return { text: has ? s.user : "", url: has ? socialUrl(platform, s.user) : null };
+  if(col.key === "followers") return { text: has ? s.followers : "", updated: s.updated };
+  if(col.key === "views")     return { text: has ? s.views : "",     updated: s.viewsUpdated };
+  if(col.key === "er")        return { text: has ? s.er : "",        updated: s.erUpdated };
+  return { text:"" };
+}
+
+function renderPlatformTabs(){
+  const tabs = [];
+  if(mode === "media"){
+    tabs.push(`<button data-p="READ" class="${platform==="READ"?"active":""}">
+      <span class="pico" style="background:var(--navy)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M3 20h5V10H3zM10 20h5V4h-5zM17 20h5v-7h-5z"/></svg>
+      </span>Readership</button>`);
+  }
+  PLATFORM_ORDER.forEach(p => {
+    const m = SOCIAL_ICONS[p];
+    const inner = m.img ? `<img src="${m.img}" alt="${m.label}" />` : m.icon;
+    tabs.push(`<button data-p="${p}" class="${platform===p?"active":""}">
+      <span class="pico" style="background:${m.color}">${inner}</span>${m.label}</button>`);
+  });
+  return `<div class="platform-tabs">${tabs.join("")}</div>`;
+}
+
+function render(){
+  const sel = currentSelection();
+  countNow.textContent = sel.length;
+  searchInput.disabled = sel.length >= MAX;
+
+  chipsEl.innerHTML = sel.map(r => `
+    <span class="chip">${escapeHtml(r.name)}
+      <button data-name="${escapeHtml(r.name)}" title="Remove">&times;</button>
+    </span>`).join("");
+  chipsEl.querySelectorAll('button').forEach(b => {
+    b.addEventListener('click', () => removeRecord(b.dataset.name));
+  });
+
+  if(!sel.length){
+    resultsEl.innerHTML = `
+      <div class="empty-state">
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 20h5V10H3zM10 20h5V4h-5zM17 20h5v-7h-5z"/></svg>
+        <h2>Nothing to compare yet</h2>
+        <p>Add up to ${MAX} names above to see them side by side.</p>
+      </div>`;
+    return;
+  }
+
+  const cols = columnsFor();
+
+  // sort rows
+  let rows = sel.slice();
+  if(sort.col){
+    const c = cols.find(x => x.key === sort.col);
+    if(c){
+      rows.sort((a,b) => {
+        const av = cellData(a,c).text, bv = cellData(b,c).text;
+        if(c.type === "num"){
+          const an = toNum(av), bn = toNum(bv);
+          if(an === null && bn === null) return 0;
+          if(an === null) return 1;
+          if(bn === null) return -1;
+          return (an - bn) * sort.dir;
+        }
+        return av.localeCompare(bv) * sort.dir;
+      });
+    }
+  }
+
+  // best value per numeric column
+  const best = {};
+  cols.filter(c => c.type === "num").forEach(c => {
+    let top = null;
+    rows.forEach(r => {
+      const n = toNum(cellData(r,c).text);
+      if(n !== null && (top === null || n > top)) top = n;
+    });
+    best[c.key] = top;
+  });
+
+  const head = cols.map(c => `
+    <th class="${c.type==='handle'||c.type==='text'?'nosort':''} ${sort.col===c.key?'sorted':''}" data-col="${c.key}">
+      ${escapeHtml(c.label)}${c.type==='handle'||c.type==='text' ? "" : `<span class="arrow">${sort.col===c.key ? (sort.dir===1?"▲":"▼") : "⇅"}</span>`}
+    </th>`).join("");
+
+  const body = rows.map(r => "<tr>" + cols.map(c => {
+    const d = cellData(r, c);
+    if(c.type === "name") return `<td class="name">${escapeHtml(d.text)}</td>`;
+    if(c.type === "text") return `<td>${d.text ? escapeHtml(d.text) : "—"}</td>`;
+    if(c.type === "handle"){
+      if(!d.text) return `<td class="dash">—</td>`;
+      return `<td class="handle">${d.url ? `<a href="${d.url}" target="_blank" rel="noopener">${escapeHtml(d.text)}</a>` : escapeHtml(d.text)}</td>`;
+    }
+    if(!d.text) return `<td class="dash">—</td>`;
+    const n = toNum(d.text);
+    const isBest = rows.length > 1 && n !== null && best[c.key] !== null && n === best[c.key];
+    return `<td class="num ${isBest ? "best" : ""}">${escapeHtml(d.text)}
+      ${d.updated ? `<div class="updated">Last Updated ${escapeHtml(d.updated)}</div>` : ""}</td>`;
+  }).join("") + "</tr>").join("");
+
+  resultsEl.innerHTML = renderPlatformTabs() + `
+    <div class="table-wrap">
+      <table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>
+    </div>
+    ${mode === "kol" && platform !== "READ" ? `<div class="note">Average views and engagement rates are calculated based on the last 30 posts.</div>` : ""}`;
+
+  resultsEl.querySelectorAll('.platform-tabs button').forEach(b => {
+    b.addEventListener('click', () => { platform = b.dataset.p; sort = { col:null, dir:-1 }; render(); });
+  });
+  resultsEl.querySelectorAll('thead th:not(.nosort)').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.dataset.col;
+      if(sort.col === col) sort.dir = -sort.dir;
+      else sort = { col, dir:-1 };
+      render();
+    });
+  });
+}
+
+activate("kol");
+</script>
+</body>
+</html>

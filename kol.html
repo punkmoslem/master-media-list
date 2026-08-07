@@ -385,7 +385,7 @@
   .er-tooltip table{ width:100%; border-collapse:collapse; margin-bottom:6px; }
   .er-tooltip td{ padding:2px 0; font-size:0.72rem; }
   .er-tooltip td:last-child{ text-align:right; font-weight:700; color:var(--teal); }
-  .er-tooltip .er-tooltip-source{ font-size:0.62rem; color:#b8c4cf; font-style:italic; margin-top:4px; }
+  .er-tooltip .er-tooltip-source{ font-size:0.52rem; color:#b8c4cf; font-style:italic; margin-top:4px; }
   @media (max-width:600px){
     .er-tooltip{ left:auto; right:-10px; transform:translateY(4px); width:220px; }
     .er-tooltip-wrap:hover .er-tooltip,
@@ -497,7 +497,6 @@ const ER_BENCHMARKS = {
   YT: {
     title: "YouTube Engagement Benchmark",
     rows: [
-      ["Overall median", "3.06%"],
       ["Nano (1K–10K)", "6–8%"],
       ["Micro (10K–100K)", "3–5%"],
       ["Macro (100K–1M)", "1–2.5%"],
@@ -509,7 +508,6 @@ const ER_BENCHMARKS = {
   IG: {
     title: "Instagram Engagement Benchmark",
     rows: [
-      ["Overall median", "1.81%"],
       ["Nano (1K–10K)", "3.42%"],
       ["Micro (10K–50K)", "2.15%"],
       ["Mid/Macro (50K–1M)", "1–1.5%"],
@@ -520,7 +518,6 @@ const ER_BENCHMARKS = {
   TikTok: {
     title: "TikTok Engagement Benchmark",
     rows: [
-      ["Overall median", "4.25%"],
       ["Nano (1K–10K)", "7.84%"],
       ["Micro (10K–50K)", "5.21%"],
       ["Mid (50K–100K)", "3.89%"],
@@ -533,7 +530,6 @@ const ER_BENCHMARKS = {
   X: {
     title: "X (Twitter) Engagement Benchmark",
     rows: [
-      ["Overall average", "0.10%"],
       ["Good rate", "0.5–1%"]
     ],
     source: "Source: Engagement Rates by Follower Tier (2026) — TikTok, Instagram & YouTube Benchmarks"
@@ -541,7 +537,6 @@ const ER_BENCHMARKS = {
   Threads: {
     title: "Threads Engagement Benchmark",
     rows: [
-      ["Overall average", "4.50%"],
       ["Note", "Beats TikTok & IG per-reach"]
     ],
     source: "Source: Engagement Rates by Follower Tier (2026) — TikTok, Instagram & YouTube Benchmarks"
@@ -750,7 +745,7 @@ function renderResult(rec){
         <div class="social-rows">
           ${Object.keys(SOCIAL_ICONS).map(key => socialCardHTML(key, rec.social[key])).join("")}
         </div>
-        <div class="er-note">Engagement rates are calculated based on the last 10 posts.</div>
+        <div class="er-note">Engagement rates are calculated based on the last 30 posts.</div>
       </div>
     </div>
   `;

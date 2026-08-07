@@ -319,7 +319,7 @@
     border-radius:12px;
     padding:14px 18px;
     display:grid;
-    grid-template-columns:1.4fr 1fr 1fr;
+    grid-template-columns:1.4fr 1fr 1fr 1fr;
     align-items:center;
     gap:14px;
     background:var(--bg);
@@ -602,11 +602,11 @@ function parseCSV(text){
       category: get("Category (Tech KoL/Media)"),
       profile: get("Profile"),
       social: {
-        YT: { user: get("YT Username"), followers: get("YT Subscribers"), updated: get("YT Last Updated"), er: get("ER - YouTube"), erUpdated: get("YT ER Last Updated") },
-        IG: { user: get("IG Username"), followers: get("IG Followers"), updated: get("IG Last Updated"), er: get("ER - Instagram"), erUpdated: get("IG ER Last Updated") },
-        TikTok: { user: get("TikTok Username"), followers: get("TikTok Followers"), updated: get("TikTok Last Updated"), er: get("ER - TikTok"), erUpdated: get("TikTok ER Last Updated") },
-        X: { user: get("X Username"), followers: get("X Followers"), updated: get("X Last Updated"), er: get("ER - X"), erUpdated: get("X ER Last Updated") },
-        Threads: { user: get("Threads Username"), followers: get("Threads Followers"), updated: get("Threads Last Updated"), er: get("ER - Threads"), erUpdated: get("Threads ER Last Updated") }
+        YT: { user: get("YT Username"), followers: get("YT Subscribers"), updated: get("YT Last Updated"), er: get("ER - YouTube"), erUpdated: get("YT ER Last Updated"), views: get("YouTube Avg Views (30 posts)"), viewsUpdated: get("YouTube Avg Views Last Updated") },
+        IG: { user: get("IG Username"), followers: get("IG Followers"), updated: get("IG Last Updated"), er: get("ER - Instagram"), erUpdated: get("IG ER Last Updated"), views: get("Instagram Avg Views (30 posts)"), viewsUpdated: get("Instagram Avg Views Last Updated") },
+        TikTok: { user: get("TikTok Username"), followers: get("TikTok Followers"), updated: get("TikTok Last Updated"), er: get("ER - TikTok"), erUpdated: get("TikTok ER Last Updated"), views: get("TikTok Avg Views (30 posts)"), viewsUpdated: get("TikTok Avg Views Last Updated") },
+        X: { user: get("X Username"), followers: get("X Followers"), updated: get("X Last Updated"), er: get("ER - X"), erUpdated: get("X ER Last Updated"), views: get("X Avg Views (30 posts)"), viewsUpdated: get("X Avg Views Last Updated") },
+        Threads: { user: get("Threads Username"), followers: get("Threads Followers"), updated: get("Threads Last Updated"), er: get("ER - Threads"), erUpdated: get("Threads ER Last Updated"), views: get("Threads Avg Views (30 posts)"), viewsUpdated: get("Threads Avg Views Last Updated") }
       }
     };
     if(rec.name) data.push(rec);
@@ -713,6 +713,11 @@ function socialCardHTML(key, data){
         <div class="label">Followers</div>
         <div class="value">${has && data.followers ? escapeHtml(data.followers) : "—"}</div>
         ${has && data.updated ? `<div class="updated">Last Updated ${escapeHtml(data.updated)}</div>` : ""}
+      </div>
+      <div class="social-stat">
+        <div class="label">Avg Views</div>
+        <div class="value">${has && data.views ? escapeHtml(data.views) : "—"}</div>
+        ${has && data.views && data.viewsUpdated ? `<div class="updated">Last Updated ${escapeHtml(data.viewsUpdated)}</div>` : ""}
       </div>
       <div class="social-stat">
         <div class="label">Engagement Rate${erTooltipHTML(key)}</div>

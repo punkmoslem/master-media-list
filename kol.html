@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Master KOL List — R&amp;R Communications</title>
 <link rel="icon" href="logo.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;0,900;1,400&display=swap" rel="stylesheet" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <style>
   :root{
@@ -23,7 +26,7 @@
   *{box-sizing:border-box;}
   body{
     margin:0;
-    font-family:'Helvetica Neue', Arial, sans-serif;
+    font-family:'Lato', 'Helvetica Neue', Arial, sans-serif;
     background:
       radial-gradient(circle at 15% 0%, rgba(23,166,141,0.08), transparent 40%),
       radial-gradient(circle at 100% 20%, rgba(44,62,80,0.06), transparent 45%),
@@ -706,6 +709,97 @@
     }
   }
 
+
+  /* ================= Header motion + footer mark ================= */
+  header{
+    position:sticky;
+    overflow:hidden;
+    background:linear-gradient(120deg, var(--navy-dark) 0%, var(--navy) 35%, #24384c 60%, var(--navy) 80%, var(--navy-dark) 100%);
+    background-size:300% 300%;
+    animation: headerFlow 24s ease-in-out infinite;
+  }
+  @keyframes headerFlow{
+    0%{ background-position:0% 50%; }
+    50%{ background-position:100% 50%; }
+    100%{ background-position:0% 50%; }
+  }
+  /* drifting teal aurora behind the header content */
+  header::before{
+    content:"";
+    position:absolute;
+    inset:-70% -25%;
+    background:
+      radial-gradient(closest-side, rgba(23,166,141,.34), transparent 72%),
+      radial-gradient(closest-side, rgba(23,166,141,.20), transparent 72%);
+    background-repeat:no-repeat;
+    background-size:46% 190%, 34% 165%;
+    background-position:2% 40%, 68% 62%;
+    filter:blur(26px);
+    animation: headerAurora 19s ease-in-out infinite alternate;
+    pointer-events:none;
+    z-index:0;
+  }
+  @keyframes headerAurora{
+    0%{   background-position:0% 42%, 66% 60%; opacity:.85; }
+    50%{  background-position:42% 56%, 34% 34%; opacity:1; }
+    100%{ background-position:82% 46%, 8% 66%; opacity:.9; }
+  }
+  /* travelling teal sheen along the bottom edge */
+  header::after{
+    content:"";
+    position:absolute;
+    left:0; right:0; bottom:0;
+    height:2px;
+    background:linear-gradient(90deg, transparent 0%, rgba(23,166,141,.15) 20%, var(--teal) 45%, #3fe0c0 52%, var(--teal) 60%, rgba(23,166,141,.15) 80%, transparent 100%);
+    background-size:220% 100%;
+    animation: headerSheen 7s linear infinite;
+    pointer-events:none;
+    z-index:1;
+  }
+  @keyframes headerSheen{
+    from{ background-position:220% 0; }
+    to{   background-position:-220% 0; }
+  }
+  header > *{ position:relative; z-index:2; }
+
+  /* staggered entrance */
+  header img       { animation: hdrRise .75s var(--ease-soft) both; }
+  header .title h1 { animation: hdrRise .75s .07s var(--ease-soft) both; }
+  header .title p  { animation: hdrRise .75s .14s var(--ease-soft) both; }
+  header .status   { animation: hdrRise .75s .21s var(--ease-soft) both; }
+  @keyframes hdrRise{
+    from{ opacity:0; transform:translateY(-10px); }
+    to{   opacity:1; transform:translateY(0); }
+  }
+  header img{ transition: transform .45s var(--ease-soft), filter .45s var(--ease-soft); }
+  header:hover img{ transform:scale(1.05); filter: drop-shadow(0 4px 12px rgba(0,0,0,.45)); }
+
+  /* breathing status dot */
+  header .dot{ animation: dotPulse 2.6s ease-in-out infinite; }
+  @keyframes dotPulse{
+    0%,100%{ box-shadow:0 0 0 3px rgba(23,166,141,.22), 0 0 12px rgba(23,166,141,.65); }
+    50%{     box-shadow:0 0 0 6px rgba(23,166,141,.10), 0 0 22px rgba(23,166,141,1); }
+  }
+
+  /* --- footer mark --- */
+  footer{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:38px 20px 52px;
+  }
+  .footer-logo{
+    height:30px;
+    width:auto;
+    opacity:.45;
+    transition: opacity .35s var(--ease-soft), transform .35s var(--ease-soft), filter .35s var(--ease-soft);
+  }
+  .footer-logo:hover{
+    opacity:1;
+    transform:translateY(-2px);
+    filter: drop-shadow(0 6px 14px rgba(28,42,56,.22));
+  }
+
 </style>
 </head>
 <body>
@@ -749,7 +843,7 @@
   </div>
 </main>
 
-<footer>Live data synced from the Master KOL List Google Sheet · R&amp;R Communications</footer>
+<footer><img class="footer-logo" src="logo.png" alt="R&amp;R Communications" /></footer>
 
 <script>
 const SHEET_ID = "1LUyZHtuBtgYkVKwJqCPf-_RxbNaR-UaIebp15__ZxGc";

@@ -1057,7 +1057,7 @@ function socialCardHTML(key, data){
       <div class="social-stat">
         <div class="label">Followers</div>
         <div class="value">${has && data.followers ? escapeHtml(data.followers) : "—"}</div>
-        ${has && data.updated ? `<div class="updated">Last Updated ${escapeHtml(data.updated)}</div>` : ""}
+        ${has && data.updated ? `<div class="updated">(${escapeHtml(data.updated)})</div>` : ""}
       </div>
     </div>
   `;
@@ -1097,7 +1097,7 @@ function renderResult(rec){
           <div class="stat">
             <div class="label">Daily Pageviews (Hypestat.com)</div>
             <div class="value">${rec.readership ? escapeHtml(rec.readership) : "—"}</div>
-            ${rec.readershipUpdated ? `<div class="updated">Last Updated ${escapeHtml(rec.readershipUpdated)}</div>` : ""}
+            ${rec.readershipUpdated ? `<div class="updated">(${escapeHtml(rec.readershipUpdated)})</div>` : ""}
           </div>
         </div>
         <div class="subhead">Profile</div>

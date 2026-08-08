@@ -282,14 +282,6 @@
   td.handle a{ color:var(--teal-dark); text-decoration:none; font-weight:600; }
   td.handle a:hover{ text-decoration:underline; }
   td.num{ font-weight:700; color:var(--teal-dark); white-space:nowrap; }
-  td.num.best{ position:relative; }
-  td.num.best::after{
-    content:"BEST"; margin-left:8px;
-    font-size:0.55rem; font-weight:700;
-    letter-spacing:.06em; vertical-align:middle;
-    background:var(--teal); color:#fff;
-    padding:2px 6px; border-radius:999px;
-  }
   td .updated{ font-size:0.5rem; color:var(--muted-solid); margin-top:2px; font-weight:400; }
   td.dash{ color:var(--muted-solid); }
 
@@ -572,10 +564,6 @@
   tbody tr:hover{
     box-shadow: inset 3px 0 0 var(--teal);
   }
-  td.num.best::after{
-    background:linear-gradient(170deg,#1cb69b, var(--teal-dark));
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 2px 5px rgba(18,138,117,.4);
-  }
 
   /* --- empty state --- */
   .empty-state svg{ filter: drop-shadow(0 6px 14px rgba(28,42,56,.14)); }
@@ -587,6 +575,47 @@
     }
   }
 
+
+  /* ================= Best-value mark ================= */
+  td.num .val-line{
+    display:inline-flex;
+    align-items:center;
+    gap:2px;
+  }
+  .best-mark{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:21px; height:21px;
+    border-radius:50%;
+    margin-left:7px;
+    flex-shrink:0;
+    background:linear-gradient(165deg,#3a5266 0%, var(--navy) 45%, var(--navy-dark) 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.22),
+      0 0 0 2px rgba(23,166,141,.30),
+      0 3px 8px rgba(28,42,56,.34);
+    /* pops in only after the staggered rows have finished, then keeps floating */
+    animation:
+      bestPop .52s var(--ease-soft) .78s both,
+      bestFloat 3s ease-in-out 1.3s infinite;
+  }
+  .best-mark svg{
+    width:12px; height:12px;
+    fill:#fff;
+    display:block;
+    filter: drop-shadow(0 1px 1px rgba(0,0,0,.35));
+  }
+  @keyframes bestPop{
+    0%{   opacity:0; transform:scale(.2) translateY(6px); }
+    55%{  opacity:1; transform:scale(1.22) translateY(-3px); }
+    78%{  transform:scale(.94) translateY(1px); }
+    100%{ opacity:1; transform:scale(1) translateY(0); }
+  }
+  @keyframes bestFloat{
+    0%,100%{ transform:translateY(0); box-shadow: inset 0 1px 0 rgba(255,255,255,.22), 0 0 0 2px rgba(23,166,141,.30), 0 3px 8px rgba(28,42,56,.34); }
+    50%{     transform:translateY(-3px); box-shadow: inset 0 1px 0 rgba(255,255,255,.22), 0 0 0 2px rgba(23,166,141,.42), 0 7px 14px rgba(28,42,56,.28); }
+  }
 
   /* ================= Header motion + footer mark ================= */
   header{
@@ -774,6 +803,8 @@ const SOCIAL_ICONS = {
   }
 };
 const PLATFORM_ORDER = ["YT","IG","TikTok","X","Threads"];
+
+const BEST_MARK = `<span class="best-mark" title="Highest in this column" aria-label="Highest in this column"><svg viewBox="0 0 24 24"><path d="M2 21h3V9H2v12zM22.6 10.3c0-1-.8-1.8-1.8-1.8h-5.4l.8-3.9v-.3c0-.4-.2-.8-.4-1L14.9 2 8.6 8.3c-.3.3-.5.8-.5 1.3v9c0 1 .8 1.8 1.8 1.8h8.1c.7 0 1.4-.4 1.6-1.1l2.7-6.4c.1-.2.1-.4.1-.6v-2z"/></svg></span>`;
 
 function socialUrl(key, user){
   if(!user || user === "-") return null;
@@ -1112,8 +1143,9 @@ function render(){
     if(!d.text) return `<td class="dash">—</td>`;
     const n = toNum(d.text);
     const isBest = rows.length > 1 && n !== null && best[c.key] !== null && n === best[c.key];
-    return `<td class="num ${isBest ? "best" : ""}">${escapeHtml(d.text)}
-      ${d.updated ? `<div class="updated">Last Updated ${escapeHtml(d.updated)}</div>` : ""}</td>`;
+    return `<td class="num ${isBest ? "best" : ""}">
+      <span class="val-line">${escapeHtml(d.text)}${isBest ? BEST_MARK : ""}</span>
+      ${d.updated ? `<div class="updated">(${escapeHtml(d.updated)})</div>` : ""}</td>`;
   }).join("") + "</tr>").join("");
 
   const html = renderPlatformTabs() + `

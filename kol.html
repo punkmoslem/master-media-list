@@ -1111,17 +1111,17 @@ function socialCardHTML(key, data){
       <div class="social-stat">
         <div class="label">Followers</div>
         <div class="value">${has && data.followers ? escapeHtml(data.followers) : "—"}</div>
-        ${has && data.updated ? `<div class="updated">Last Updated ${escapeHtml(data.updated)}</div>` : ""}
+        ${has && data.updated ? `<div class="updated">(${escapeHtml(data.updated)})</div>` : ""}
       </div>
       <div class="social-stat">
         <div class="label">Avg Views</div>
         <div class="value">${has && data.views ? escapeHtml(data.views) : "—"}</div>
-        ${has && data.views && data.viewsUpdated ? `<div class="updated">Last Updated ${escapeHtml(data.viewsUpdated)}</div>` : ""}
+        ${has && data.views && data.viewsUpdated ? `<div class="updated">(${escapeHtml(data.viewsUpdated)})</div>` : ""}
       </div>
       <div class="social-stat">
         <div class="label">Engagement Rate${erTooltipHTML(key)}</div>
         <div class="value">${has && data.er ? escapeHtml(data.er) : "—"}</div>
-        ${has && data.er && data.erUpdated ? `<div class="updated">Last Updated ${escapeHtml(data.erUpdated)}</div>` : ""}
+        ${has && data.er && data.erUpdated ? `<div class="updated">(${escapeHtml(data.erUpdated)})</div>` : ""}
       </div>
     </div>
   `;

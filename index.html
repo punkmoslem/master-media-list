@@ -190,8 +190,18 @@
   .suggestion-item:hover, .suggestion-item.active{
     background: rgba(23,166,141,0.08);
   }
+  .suggestion-item .name-col{ display:flex; flex-direction:column; gap:2px; min-width:0; }
   .suggestion-item .name{ font-weight:600; }
   .suggestion-item .name mark{
+    background:rgba(23,166,141,0.25);
+    color:inherit;
+    border-radius:3px;
+  }
+  .suggestion-item .match-context{
+    font-size:0.74rem;
+    color:var(--muted-solid);
+  }
+  .suggestion-item .match-context mark{
     background:rgba(23,166,141,0.25);
     color:inherit;
     border-radius:3px;
@@ -824,7 +834,7 @@
   <div class="search-wrap">
     <div class="search-box">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input id="searchInput" type="text" placeholder="Search media outlet or journalist name…" autocomplete="off" />
+      <input id="searchInput" type="text" placeholder="Search media outlet, journalist, or desk…" autocomplete="off" />
       <button id="searchBtn">Search</button>
     </div>
     <div class="suggestions" id="suggestions"></div>
@@ -977,7 +987,10 @@ function highlight(text, query){
 function matchRecord(rec, q){
   const query = q.toLowerCase();
   if(rec.media.toLowerCase().includes(query)) return true;
-  return rec.journalists.some(j => j.name.toLowerCase().includes(query));
+  return rec.journalists.some(j =>
+    j.name.toLowerCase().includes(query) ||
+    (j.desk && j.desk.toLowerCase().includes(query))
+  );
 }
 
 function renderSuggestions(query){
@@ -992,12 +1005,25 @@ function renderSuggestions(query){
     suggestionsEl.classList.add('open');
     return;
   }
-  suggestionsEl.innerHTML = matches.map((r,i) => `
+  const q = query.toLowerCase();
+  suggestionsEl.innerHTML = matches.map((r,i) => {
+    const mediaHit = r.media.toLowerCase().includes(q);
+    const matchedJournalist = !mediaHit
+      ? r.journalists.find(j => j.name.toLowerCase().includes(q) || (j.desk && j.desk.toLowerCase().includes(q)))
+      : null;
+    const contextHtml = matchedJournalist
+      ? `<span class="match-context">${highlight(matchedJournalist.name, query)}${matchedJournalist.desk ? ` &middot; ${highlight(matchedJournalist.desk, query)}` : ""}</span>`
+      : "";
+    return `
     <div class="suggestion-item" data-index="${i}" data-media="${escapeHtml(r.media)}">
-      <span class="name">${highlight(r.media, query)}</span>
+      <span class="name-col">
+        <span class="name">${highlight(r.media, query)}</span>
+        ${contextHtml}
+      </span>
       <span class="tier">${escapeHtml(r.tier || "—")}</span>
     </div>
-  `).join("");
+  `;
+  }).join("");
   suggestionsEl.classList.add('open');
   activeIndex = -1;
   [...suggestionsEl.querySelectorAll('.suggestion-item')].forEach(el => {
@@ -1017,7 +1043,7 @@ function doSearch(q){
   const rec = exact || records.find(r => matchRecord(r, query));
   suggestionsEl.classList.remove('open');
   if(!rec){
-    swapResults(`<div class="empty-state"><h2>No results for "${escapeHtml(query)}"</h2><p>Try a different media name or journalist name.</p></div>`);
+    swapResults(`<div class="empty-state"><h2>No results for "${escapeHtml(query)}"</h2><p>Try a different media name, journalist name, or desk.</p></div>`);
     return;
   }
   renderResult(rec);

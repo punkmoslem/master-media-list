@@ -373,11 +373,12 @@
     font-size:0.6rem; font-weight:700; font-style:normal;
     margin-left:4px; vertical-align:middle;
   }
+  .er-tooltip-wrap{ --shift:0px; }
   .er-tooltip{
     visibility:hidden; opacity:0; pointer-events:none;
     position:absolute; z-index:50; bottom:calc(100% + 10px); left:50%;
-    transform:translateX(-50%) translateY(4px);
-    width:250px; max-width:70vw;
+    transform:translateX(calc(-50% + var(--shift))) translateY(4px);
+    width:250px; max-width:min(80vw, 280px);
     background:var(--navy); color:#fff;
     border-radius:10px; padding:12px 14px;
     font-size:0.72rem; line-height:1.5; text-align:left;
@@ -386,11 +387,12 @@
   }
   .er-tooltip-wrap:hover .er-tooltip,
   .er-tooltip-wrap:focus .er-tooltip{
-    visibility:visible; opacity:1; transform:translateX(-50%) translateY(0);
+    visibility:visible; opacity:1;
+    transform:translateX(calc(-50% + var(--shift))) translateY(0);
   }
   .er-tooltip::after{
     content:""; position:absolute; top:100%; left:50%;
-    transform:translateX(-50%);
+    transform:translateX(calc(-50% - var(--shift)));
     border:6px solid transparent; border-top-color:var(--navy);
   }
   .er-tooltip .er-tooltip-title{ font-weight:700; color:var(--teal); text-transform:uppercase; letter-spacing:.04em; font-size:0.66rem; margin-bottom:6px; }
@@ -399,10 +401,7 @@
   .er-tooltip td:last-child{ text-align:right; font-weight:700; color:var(--teal); }
   .er-tooltip .er-tooltip-source{ font-size:0.52rem; color:#b8c4cf; font-style:italic; margin-top:4px; }
   @media (max-width:600px){
-    .er-tooltip{ left:auto; right:-10px; transform:translateY(4px); width:220px; }
-    .er-tooltip-wrap:hover .er-tooltip,
-    .er-tooltip-wrap:focus .er-tooltip{ transform:translateY(0); }
-    .er-tooltip::after{ left:auto; right:16px; transform:none; }
+    .er-tooltip{ width:220px; max-width:76vw; }
   }
   .er-note{
     margin-top:14px;
@@ -1085,12 +1084,31 @@ function swapResults(html){
   setTimeout(() => {
     if(token !== swapToken) return;
     resultsEl.innerHTML = html;
+    positionTooltips();
     requestAnimationFrame(() => {
       if(token !== swapToken) return;
       resultsEl.classList.remove('morph-out');
     });
   }, 160);
 }
+
+function positionTooltips(){
+  const margin = 10;
+  document.querySelectorAll('.er-tooltip-wrap').forEach(wrap => {
+    const tip = wrap.querySelector('.er-tooltip');
+    if(!tip) return;
+    wrap.style.setProperty('--shift', '0px');
+    const rect = tip.getBoundingClientRect();
+    let shift = 0;
+    if(rect.right > window.innerWidth - margin){
+      shift = (window.innerWidth - margin) - rect.right;
+    } else if(rect.left < margin){
+      shift = margin - rect.left;
+    }
+    if(shift !== 0) wrap.style.setProperty('--shift', shift + 'px');
+  });
+}
+window.addEventListener('resize', positionTooltips);
 
 function socialCardHTML(key, data){
   const meta = SOCIAL_ICONS[key];

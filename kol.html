@@ -1092,23 +1092,37 @@ function swapResults(html){
   }, 160);
 }
 
-function positionTooltips(){
+function positionTooltip(wrap){
+  const tip = wrap.querySelector('.er-tooltip');
+  if(!tip) return;
+  wrap.style.setProperty('--shift', '0px');
   const margin = 10;
-  document.querySelectorAll('.er-tooltip-wrap').forEach(wrap => {
-    const tip = wrap.querySelector('.er-tooltip');
-    if(!tip) return;
-    wrap.style.setProperty('--shift', '0px');
-    const rect = tip.getBoundingClientRect();
-    let shift = 0;
-    if(rect.right > window.innerWidth - margin){
-      shift = (window.innerWidth - margin) - rect.right;
-    } else if(rect.left < margin){
-      shift = margin - rect.left;
-    }
-    if(shift !== 0) wrap.style.setProperty('--shift', shift + 'px');
-  });
+  const rect = tip.getBoundingClientRect();
+  let shift = 0;
+  if(rect.right > window.innerWidth - margin){
+    shift = (window.innerWidth - margin) - rect.right;
+  } else if(rect.left < margin){
+    shift = margin - rect.left;
+  }
+  if(shift !== 0) wrap.style.setProperty('--shift', shift + 'px');
+}
+function positionTooltips(){
+  document.querySelectorAll('.er-tooltip-wrap').forEach(positionTooltip);
 }
 window.addEventListener('resize', positionTooltips);
+if(document.fonts && document.fonts.ready){
+  document.fonts.ready.then(positionTooltips);
+}
+// recompute right before a tooltip actually appears, in case layout shifted
+// (webfont swap, dynamic content, etc.) since the last full pass
+document.addEventListener('mouseenter', (e) => {
+  const wrap = e.target.closest && e.target.closest('.er-tooltip-wrap');
+  if(wrap) positionTooltip(wrap);
+}, true);
+document.addEventListener('focusin', (e) => {
+  const wrap = e.target.closest && e.target.closest('.er-tooltip-wrap');
+  if(wrap) positionTooltip(wrap);
+});
 
 function socialCardHTML(key, data){
   const meta = SOCIAL_ICONS[key];

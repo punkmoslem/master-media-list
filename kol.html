@@ -1080,6 +1080,10 @@ function swapResults(html){
   resultsEl.classList.add('morph-out');
   setTimeout(() => {
     if(token !== swapToken) return;
+    // tooltips from the outgoing render were re-parented to <body> while
+    // open (see wireTooltips) — drop them before the wraps that owned
+    // them are discarded, or they'd linger as orphans
+    document.querySelectorAll('body > .er-tooltip').forEach(t => t.remove());
     resultsEl.innerHTML = html;
     wireTooltips();
     requestAnimationFrame(() => {
@@ -1089,14 +1093,16 @@ function swapResults(html){
   }, 160);
 }
 
-// Tooltips use position:fixed with coordinates computed entirely in JS from
-// the icon's real getBoundingClientRect(), then clamped to the viewport.
-// This sidesteps CSS transform/calc(var()) edge cases and any uncertainty
-// around delegated mouseenter listeners — each icon gets its own direct
-// listener, and the shown position is always freshly measured.
+// Tooltips are moved to <body> and positioned with fixed coordinates
+// computed entirely in JS from the icon's real getBoundingClientRect(),
+// clamped to the viewport. Re-parenting to <body> is required: several
+// ancestors (e.g. .social-row on hover) apply a CSS transform, and any
+// transformed ancestor creates a new containing block that hijacks
+// position:fixed, positioning it relative to that ancestor instead of
+// the viewport — which is what caused the tooltip to render off-screen.
 function openTooltip(wrap){
   const icon = wrap.querySelector('.er-info-icon');
-  const tip = wrap.querySelector('.er-tooltip');
+  const tip = wrap._tip;
   const arrow = tip && tip.querySelector('.er-tooltip-arrow');
   if(!icon || !tip) return;
   const margin = 10;
@@ -1140,13 +1146,16 @@ function openTooltip(wrap){
   }
 }
 function closeTooltip(wrap){
-  const tip = wrap.querySelector('.er-tooltip');
-  if(tip) tip.classList.remove('tt-open');
+  if(wrap._tip) wrap._tip.classList.remove('tt-open');
 }
 function wireTooltips(){
   document.querySelectorAll('.er-tooltip-wrap').forEach(wrap => {
     if(wrap.dataset.ttWired) return;
     wrap.dataset.ttWired = '1';
+    const tip = wrap.querySelector('.er-tooltip');
+    if(!tip) return;
+    document.body.appendChild(tip);
+    wrap._tip = tip;
     wrap.addEventListener('mouseenter', () => openTooltip(wrap));
     wrap.addEventListener('mouseleave', () => closeTooltip(wrap));
     wrap.addEventListener('focus', () => openTooltip(wrap));
@@ -1155,8 +1164,9 @@ function wireTooltips(){
 }
 window.addEventListener('resize', () => {
   document.querySelectorAll('.er-tooltip.tt-open').forEach(tip => {
-    const wrap = tip.closest('.er-tooltip-wrap');
-    if(wrap) openTooltip(wrap);
+    document.querySelectorAll('.er-tooltip-wrap').forEach(wrap => {
+      if(wrap._tip === tip) openTooltip(wrap);
+    });
   });
 });
 

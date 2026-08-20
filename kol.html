@@ -373,27 +373,23 @@
     font-size:0.6rem; font-weight:700; font-style:normal;
     margin-left:4px; vertical-align:middle;
   }
-  .er-tooltip-wrap{ --shift:0px; }
   .er-tooltip{
     visibility:hidden; opacity:0; pointer-events:none;
-    position:absolute; z-index:50; bottom:calc(100% + 10px); left:50%;
-    transform:translateX(calc(-50% + var(--shift))) translateY(4px);
-    width:250px; max-width:min(80vw, 280px);
+    position:fixed; z-index:9999; top:0; left:0;
+    width:270px; max-width:min(88vw, 270px);
     background:var(--navy); color:#fff;
     border-radius:10px; padding:12px 14px;
     font-size:0.72rem; line-height:1.5; text-align:left;
     box-shadow:0 8px 24px rgba(0,0,0,.25);
-    transition:opacity .15s ease, transform .15s ease;
+    transition:opacity .15s ease;
   }
-  .er-tooltip-wrap:hover .er-tooltip,
-  .er-tooltip-wrap:focus .er-tooltip{
+  .er-tooltip.tt-open{
     visibility:visible; opacity:1;
-    transform:translateX(calc(-50% + var(--shift))) translateY(0);
   }
-  .er-tooltip::after{
-    content:""; position:absolute; top:100%; left:50%;
-    transform:translateX(calc(-50% - var(--shift)));
-    border:6px solid transparent; border-top-color:var(--navy);
+  .er-tooltip .er-tooltip-arrow{
+    content:""; position:absolute;
+    width:0; height:0;
+    border:6px solid transparent;
   }
   .er-tooltip .er-tooltip-title{ font-weight:700; color:var(--teal); text-transform:uppercase; letter-spacing:.04em; font-size:0.66rem; margin-bottom:6px; }
   .er-tooltip table{ width:100%; border-collapse:collapse; margin-bottom:6px; }
@@ -401,7 +397,7 @@
   .er-tooltip td:last-child{ text-align:right; font-weight:700; color:var(--teal); }
   .er-tooltip .er-tooltip-source{ font-size:0.52rem; color:#b8c4cf; font-style:italic; margin-top:4px; }
   @media (max-width:600px){
-    .er-tooltip{ width:220px; max-width:76vw; }
+    .er-tooltip{ width:220px; }
   }
   .er-note{
     margin-top:14px;
@@ -941,6 +937,7 @@ function erTooltipHTML(key){
     <span class="er-tooltip-wrap" tabindex="0">
       <span class="er-info-icon">i</span>
       <span class="er-tooltip">
+        <span class="er-tooltip-arrow"></span>
         <div class="er-tooltip-title">${escapeHtml(b.title)}</div>
         <table>${rowsHtml}</table>
         <div class="er-tooltip-source">${escapeHtml(b.source)}</div>
@@ -1084,7 +1081,7 @@ function swapResults(html){
   setTimeout(() => {
     if(token !== swapToken) return;
     resultsEl.innerHTML = html;
-    positionTooltips();
+    wireTooltips();
     requestAnimationFrame(() => {
       if(token !== swapToken) return;
       resultsEl.classList.remove('morph-out');
@@ -1092,36 +1089,75 @@ function swapResults(html){
   }, 160);
 }
 
-function positionTooltip(wrap){
+// Tooltips use position:fixed with coordinates computed entirely in JS from
+// the icon's real getBoundingClientRect(), then clamped to the viewport.
+// This sidesteps CSS transform/calc(var()) edge cases and any uncertainty
+// around delegated mouseenter listeners — each icon gets its own direct
+// listener, and the shown position is always freshly measured.
+function openTooltip(wrap){
+  const icon = wrap.querySelector('.er-info-icon');
   const tip = wrap.querySelector('.er-tooltip');
-  if(!tip) return;
-  wrap.style.setProperty('--shift', '0px');
+  const arrow = tip && tip.querySelector('.er-tooltip-arrow');
+  if(!icon || !tip) return;
   const margin = 10;
-  const rect = tip.getBoundingClientRect();
-  let shift = 0;
-  if(rect.right > window.innerWidth - margin){
-    shift = (window.innerWidth - margin) - rect.right;
-  } else if(rect.left < margin){
-    shift = margin - rect.left;
+  const gap = 10;
+
+  tip.classList.add('tt-open');
+  const iconRect = icon.getBoundingClientRect();
+  const tipW = tip.offsetWidth;
+  const tipH = tip.offsetHeight;
+
+  let left = iconRect.left + iconRect.width / 2 - tipW / 2;
+  left = Math.min(Math.max(left, margin), window.innerWidth - tipW - margin);
+
+  let top = iconRect.top - gap - tipH;
+  let arrowOnTop = true;
+  if(top < margin){
+    top = iconRect.bottom + gap;
+    arrowOnTop = false;
   }
-  if(shift !== 0) wrap.style.setProperty('--shift', shift + 'px');
+
+  tip.style.left = Math.round(left) + 'px';
+  tip.style.top = Math.round(top) + 'px';
+
+  if(arrow){
+    const iconCenter = iconRect.left + iconRect.width / 2;
+    let arrowLeft = iconCenter - left;
+    arrowLeft = Math.min(Math.max(arrowLeft, 12), tipW - 12);
+    arrow.style.left = Math.round(arrowLeft) + 'px';
+    arrow.style.transform = 'translateX(-50%)';
+    if(arrowOnTop){
+      arrow.style.top = '100%';
+      arrow.style.bottom = 'auto';
+      arrow.style.borderTopColor = 'var(--navy)';
+      arrow.style.borderBottomColor = 'transparent';
+    } else {
+      arrow.style.top = 'auto';
+      arrow.style.bottom = '100%';
+      arrow.style.borderBottomColor = 'var(--navy)';
+      arrow.style.borderTopColor = 'transparent';
+    }
+  }
 }
-function positionTooltips(){
-  document.querySelectorAll('.er-tooltip-wrap').forEach(positionTooltip);
+function closeTooltip(wrap){
+  const tip = wrap.querySelector('.er-tooltip');
+  if(tip) tip.classList.remove('tt-open');
 }
-window.addEventListener('resize', positionTooltips);
-if(document.fonts && document.fonts.ready){
-  document.fonts.ready.then(positionTooltips);
+function wireTooltips(){
+  document.querySelectorAll('.er-tooltip-wrap').forEach(wrap => {
+    if(wrap.dataset.ttWired) return;
+    wrap.dataset.ttWired = '1';
+    wrap.addEventListener('mouseenter', () => openTooltip(wrap));
+    wrap.addEventListener('mouseleave', () => closeTooltip(wrap));
+    wrap.addEventListener('focus', () => openTooltip(wrap));
+    wrap.addEventListener('blur', () => closeTooltip(wrap));
+  });
 }
-// recompute right before a tooltip actually appears, in case layout shifted
-// (webfont swap, dynamic content, etc.) since the last full pass
-document.addEventListener('mouseenter', (e) => {
-  const wrap = e.target.closest && e.target.closest('.er-tooltip-wrap');
-  if(wrap) positionTooltip(wrap);
-}, true);
-document.addEventListener('focusin', (e) => {
-  const wrap = e.target.closest && e.target.closest('.er-tooltip-wrap');
-  if(wrap) positionTooltip(wrap);
+window.addEventListener('resize', () => {
+  document.querySelectorAll('.er-tooltip.tt-open').forEach(tip => {
+    const wrap = tip.closest('.er-tooltip-wrap');
+    if(wrap) openTooltip(wrap);
+  });
 });
 
 function socialCardHTML(key, data){
